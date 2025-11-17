@@ -121,6 +121,13 @@ function App() {
   const previousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
+  const getRunningBalanceUpToDate = (upToDate: Date): number => {
+    const txnsUpToDate = transactions
+      .filter(t => parseISO(t.date) <= upToDate)
+      .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
+    return calculateBalance(txnsUpToDate);
+  };
+
   const recentTransactions = [...transactions]
     .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, 5);
@@ -129,49 +136,49 @@ function App() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <h1 className="text-3xl font-bold text-center mb-8 mt-4">
+        <h1 className="text-4xl font-bold text-center mb-6 mt-6">
           🎟️ BuddyTixTracker
         </h1>
-        
+
         {/* Balance Card */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6 animate-fade-in">
-          <p className="text-center text-gray-600 mb-2">Current Balance</p>
-          <p className={`text-5xl font-bold text-center ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+        <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8 animate-fade-in">
+          <p className="text-center text-gray-600 mb-3 text-lg font-semibold">Current Balance</p>
+          <p className={`text-6xl font-bold text-center mb-4 ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             ${Math.abs(balance).toFixed(2)}
           </p>
-          <p className="text-center text-sm text-gray-500 mt-2">
+          <p className="text-center text-base text-gray-500 font-medium">
             {balance >= 0 ? 'Buddy owes you' : 'You owe buddy'}
           </p>
         </div>
 
         {/* Bulk Ticket Transaction */}
-        <div className="bg-white rounded-lg shadow-lg p-4 mb-4 animate-fade-in">
-          <h2 className="text-lg font-semibold mb-3 text-blue-700">🎟️ Add Tickets</h2>
-          <div className="flex items-center justify-between gap-3">
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 animate-fade-in">
+          <h2 className="text-2xl font-bold mb-4 text-blue-700">🎟️ Add Tickets</h2>
+          <div className="flex items-center justify-between gap-4">
             <button
               onClick={decrementTickets}
-              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-2xl font-bold w-12 h-12 rounded-lg shadow transition-colors touch-manipulation"
+              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-3xl font-bold w-16 h-16 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
             >
               -
             </button>
             <div className="flex-1 text-center">
-              <div className="text-sm text-gray-600">
+              <div className="text-base text-gray-600 font-medium mb-1">
                 {ticketCount} {ticketCount === 1 ? 'ticket' : 'tickets'} × $20
               </div>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-3xl font-bold text-blue-600">
                 = ${ticketCount * 20}
               </div>
             </div>
             <button
               onClick={incrementTickets}
-              className="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-2xl font-bold w-12 h-12 rounded-lg shadow transition-colors touch-manipulation"
+              className="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-3xl font-bold w-16 h-16 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
             >
               +
             </button>
             <button
               onClick={addBulkTickets}
               disabled={ticketCount === 0}
-              className="bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xl font-bold w-12 h-12 rounded-lg shadow transition-colors touch-manipulation"
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-3xl font-bold w-16 h-16 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
             >
               ✓
             </button>
@@ -179,44 +186,44 @@ function App() {
         </div>
 
         {/* Bulk Payment Transaction */}
-        <div className="bg-white rounded-lg shadow-lg p-4 mb-6 animate-fade-in">
-          <h2 className="text-lg font-semibold mb-3 text-green-700">💵 Add Payment</h2>
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 animate-fade-in">
+          <h2 className="text-2xl font-bold mb-4 text-green-700">💵 Add Payment</h2>
+          <div className="grid grid-cols-2 gap-3 mb-5">
             <button
               onClick={() => adjustPayment(-100)}
-              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition-colors touch-manipulation"
+              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-xl font-bold py-4 px-6 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
             >
               -$100
             </button>
             <button
               onClick={() => adjustPayment(-20)}
-              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition-colors touch-manipulation"
+              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-xl font-bold py-4 px-6 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
             >
               -$20
             </button>
             <button
               onClick={() => adjustPayment(20)}
-              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition-colors touch-manipulation"
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-xl font-bold py-4 px-6 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
             >
               +$20
             </button>
             <button
               onClick={() => adjustPayment(100)}
-              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition-colors touch-manipulation"
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-xl font-bold py-4 px-6 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
             >
               +$100
             </button>
           </div>
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-4">
             <div className="flex-1 text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-4xl font-bold text-green-600">
                 ${paymentAmount}
               </div>
             </div>
             <button
               onClick={addBulkPayment}
               disabled={paymentAmount === 0}
-              className="bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xl font-bold w-12 h-12 rounded-lg shadow transition-colors touch-manipulation"
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-3xl font-bold w-16 h-16 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
             >
               ✓
             </button>
@@ -225,9 +232,9 @@ function App() {
 
         {/* Recent Transactions */}
         {recentTransactions.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-4 animate-fade-in">
-            <h2 className="font-semibold mb-3 text-gray-700">Recent Transactions</h2>
-            <div className="space-y-2">
+          <div className="bg-white rounded-2xl shadow-xl p-6 animate-fade-in mb-6">
+            <h2 className="text-2xl font-bold mb-4 text-gray-700">Recent Transactions</h2>
+            <div className="space-y-3">
               {recentTransactions.map((txn) => {
                 const ticketCount = txn.type === 'ticket' ? txn.amount / 20 : 0;
                 const displayText = txn.type === 'ticket'
@@ -235,27 +242,27 @@ function App() {
                   : `-$${txn.amount.toFixed(2)}`;
 
                 return (
-                  <div key={txn.id} className="flex justify-between items-center text-sm border-b pb-2">
+                  <div key={txn.id} className="flex justify-between items-center border-b border-gray-200 pb-3 last:border-b-0">
                     <div className="flex-1">
-                      <div className="font-medium">
+                      <div className="font-bold text-base">
                         {txn.type === 'ticket' ? '🎟️ Ticket' : '💵 Payment'}
                       </div>
-                      <div className="text-xs text-gray-500">{txn.date}</div>
+                      <div className="text-sm text-gray-500">{txn.date}</div>
                     </div>
-                    <div className={`font-bold mr-2 ${txn.type === 'ticket' ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`font-bold text-base mr-3 ${txn.type === 'ticket' ? 'text-green-600' : 'text-red-600'}`}>
                       {displayText}
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       <button
                         onClick={() => startEditTransaction(txn)}
-                        className="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 active:bg-blue-300 text-blue-700 rounded transition-colors touch-manipulation"
+                        className="px-3 py-2 text-lg bg-blue-100 hover:bg-blue-200 active:bg-blue-300 text-blue-700 rounded-lg transition-all active:scale-95 touch-manipulation"
                         aria-label="Edit transaction"
                       >
                         ✏️
                       </button>
                       <button
                         onClick={() => deleteTransaction(txn.id)}
-                        className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded transition-colors touch-manipulation"
+                        className="px-3 py-2 text-lg bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded-lg transition-all active:scale-95 touch-manipulation"
                         aria-label="Delete transaction"
                       >
                         🗑️
@@ -269,33 +276,31 @@ function App() {
         )}
 
         {/* Calendar Toggle */}
-        <div className="mt-6">
-          <button
-            onClick={() => setShowCalendar(!showCalendar)}
-            className="w-full bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-lg shadow transition-colors touch-manipulation"
-          >
-            📅 {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
-          </button>
-        </div>
+        <button
+          onClick={() => setShowCalendar(!showCalendar)}
+          className="w-full bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 font-bold text-xl py-5 px-6 rounded-2xl shadow-xl transition-all active:scale-98 touch-manipulation"
+        >
+          📅 {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
+        </button>
 
         {/* Calendar View */}
         {showCalendar && (
-          <div className="mt-6 bg-white rounded-lg shadow p-4 animate-fade-in">
+          <div className="mt-6 bg-white rounded-2xl shadow-xl p-6 animate-fade-in">
             {/* Calendar Header */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
               <button
                 onClick={previousMonth}
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded transition-colors touch-manipulation"
+                className="px-5 py-3 text-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-xl font-bold transition-all active:scale-95 touch-manipulation"
                 aria-label="Previous month"
               >
                 ←
               </button>
-              <h3 className="font-bold text-lg">
+              <h3 className="font-bold text-2xl">
                 {format(currentMonth, 'MMMM yyyy')}
               </h3>
               <button
                 onClick={nextMonth}
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded transition-colors touch-manipulation"
+                className="px-5 py-3 text-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-xl font-bold transition-all active:scale-95 touch-manipulation"
                 aria-label="Next month"
               >
                 →
@@ -303,9 +308,9 @@ function App() {
             </div>
 
             {/* Days Grid */}
-            <div className="grid grid-cols-7 gap-1 text-center">
+            <div className="grid grid-cols-7 gap-2">
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                <div key={day} className="text-xs font-semibold text-gray-500 py-1">
+                <div key={day} className="text-sm font-bold text-gray-600 py-2 text-center">
                   {day}
                 </div>
               ))}
@@ -319,23 +324,61 @@ function App() {
               {getMonthDays().map(day => {
                 const dayTransactions = getTransactionsForDate(day);
                 const hasTransactions = dayTransactions.length > 0;
-                const dayBalance = dayTransactions.reduce((sum, t) =>
-                  sum + (t.type === 'ticket' ? t.amount : -t.amount), 0
-                );
+
+                const debits = dayTransactions
+                  .filter(t => t.type === 'payment')
+                  .reduce((sum, t) => sum + t.amount, 0);
+
+                const credits = dayTransactions
+                  .filter(t => t.type === 'ticket')
+                  .reduce((sum, t) => sum + t.amount, 0);
+
+                const daySum = credits - debits;
+                const runningBalance = getRunningBalanceUpToDate(day);
                 const isToday = isSameDay(day, new Date());
 
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`aspect-square p-1 text-sm border rounded ${
-                      isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                    } ${hasTransactions ? 'bg-green-50' : ''}`}
+                    className={`aspect-square p-2 border-2 rounded-xl relative ${
+                      isToday ? 'border-blue-500 bg-blue-50 shadow-lg' : 'border-gray-300'
+                    } ${hasTransactions ? 'bg-green-50' : 'bg-white'}`}
                   >
-                    <div className="font-medium text-gray-700">{format(day, 'd')}</div>
+                    {/* Day number centered */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="font-bold text-lg text-gray-700">{format(day, 'd')}</div>
+                    </div>
+
                     {hasTransactions && (
-                      <div className={`text-xs font-bold ${dayBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {dayBalance >= 0 ? '+' : ''}{dayBalance.toFixed(0)}
-                      </div>
+                      <>
+                        {/* Debits - top left */}
+                        {debits > 0 && (
+                          <div className="absolute top-0.5 left-0.5 text-[10px] font-bold text-red-600">
+                            -{debits}
+                          </div>
+                        )}
+
+                        {/* Credits - top right */}
+                        {credits > 0 && (
+                          <div className="absolute top-0.5 right-0.5 text-[10px] font-bold text-green-600">
+                            +{credits}
+                          </div>
+                        )}
+
+                        {/* Day sum - bottom left */}
+                        <div className={`absolute bottom-0.5 left-0.5 text-[10px] font-bold ${
+                          daySum >= 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {daySum >= 0 ? '+' : ''}{daySum}
+                        </div>
+
+                        {/* Running balance - bottom right */}
+                        <div className={`absolute bottom-0.5 right-0.5 text-[10px] font-bold ${
+                          runningBalance >= 0 ? 'text-green-700' : 'text-red-700'
+                        }`}>
+                          {runningBalance.toFixed(0)}
+                        </div>
+                      </>
                     )}
                   </div>
                 );
@@ -343,8 +386,8 @@ function App() {
             </div>
 
             {/* Month Summary */}
-            <div className="mt-4 pt-4 border-t">
-              <div className="text-sm text-gray-600">
+            <div className="mt-6 pt-4 border-t-2">
+              <div className="text-base text-gray-700 font-semibold">
                 <strong>This month:</strong>{' '}
                 {transactions.filter(t => {
                   const txDate = parseISO(t.date);
@@ -359,13 +402,13 @@ function App() {
       {/* Edit Modal */}
       {showEditModal && editingTransaction && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-backdrop">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl animate-slide-in">
-            <h2 className="text-xl font-bold mb-4">Edit Transaction</h2>
-            <div className="mb-4 text-sm text-gray-600">
-              <div className="font-medium">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-slide-in">
+            <h2 className="text-2xl font-bold mb-6">Edit Transaction</h2>
+            <div className="mb-6 text-base text-gray-600">
+              <div className="font-bold text-lg">
                 {editingTransaction.type === 'ticket' ? '🎟️ Ticket' : '💵 Payment'}
               </div>
-              <div className="text-xs">{editingTransaction.date}</div>
+              <div className="text-sm">{editingTransaction.date}</div>
             </div>
             <input
               type="number"
@@ -373,23 +416,23 @@ function App() {
               value={editAmount}
               onChange={(e) => setEditAmount(e.target.value)}
               placeholder="Enter amount"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 text-lg"
+              className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl mb-6 text-xl font-semibold"
               autoFocus
             />
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <button
                 onClick={() => {
                   setShowEditModal(false);
                   setEditingTransaction(null);
                   setEditAmount('');
                 }}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-xl font-bold text-lg hover:bg-gray-50 active:bg-gray-100 transition-all active:scale-95"
               >
                 Cancel
               </button>
               <button
                 onClick={saveEditTransaction}
-                className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                className="flex-1 px-6 py-4 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl font-bold text-lg transition-all active:scale-95"
               >
                 Save
               </button>
