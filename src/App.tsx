@@ -7,8 +7,8 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMont
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState(0);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentAmount, setPaymentAmount] = useState('');
+  const [ticketCount, setTicketCount] = useState(0);
+  const [paymentAmount, setPaymentAmount] = useState(0);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [editAmount, setEditAmount] = useState('');
@@ -21,25 +21,30 @@ function App() {
     setBalance(calculateBalance(loaded));
   }, []);
 
-  const addTicket = () => {
+  const addBulkTickets = () => {
+    if (ticketCount <= 0) {
+      alert('Please add at least one ticket');
+      return;
+    }
+
     const newTransaction: Transaction = {
       id: uuidv4(),
       date: format(new Date(), 'yyyy-MM-dd'),
       type: 'ticket',
-      amount: 20,
+      amount: ticketCount * 20,
       timestamp: Date.now(),
     };
-    
+
     const updated = [...transactions, newTransaction];
     setTransactions(updated);
     saveTransactions(updated);
     setBalance(calculateBalance(updated));
+    setTicketCount(0);
   };
 
-  const addPayment = () => {
-    const amount = parseFloat(paymentAmount);
-    if (isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid amount');
+  const addBulkPayment = () => {
+    if (paymentAmount <= 0) {
+      alert('Please add a payment amount');
       return;
     }
 
@@ -47,7 +52,7 @@ function App() {
       id: uuidv4(),
       date: format(new Date(), 'yyyy-MM-dd'),
       type: 'payment',
-      amount: amount,
+      amount: paymentAmount,
       timestamp: Date.now(),
     };
 
@@ -55,9 +60,13 @@ function App() {
     setTransactions(updated);
     saveTransactions(updated);
     setBalance(calculateBalance(updated));
-    setShowPaymentModal(false);
-    setPaymentAmount('');
+    setPaymentAmount(0);
   };
+
+  const incrementTickets = () => setTicketCount(prev => prev + 1);
+  const decrementTickets = () => setTicketCount(prev => Math.max(0, prev - 1));
+
+  const adjustPayment = (amount: number) => setPaymentAmount(prev => Math.max(0, prev + amount));
 
   const deleteTransaction = (id: string) => {
     if (!confirm('Are you sure you want to delete this transaction?')) {
@@ -135,25 +144,83 @@ function App() {
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <button
-            onClick={addTicket}
-            className="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-xl font-bold py-6 px-4 rounded-lg shadow-lg transition-colors touch-manipulation"
-          >
-            <div className="text-3xl mb-1">+</div>
-            <div className="text-sm">Add Ticket</div>
-            <div className="text-xs opacity-75">$20</div>
-          </button>
-          
-          <button
-            onClick={() => setShowPaymentModal(true)}
-            className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-xl font-bold py-6 px-4 rounded-lg shadow-lg transition-colors touch-manipulation"
-          >
-            <div className="text-3xl mb-1">$</div>
-            <div className="text-sm">Add Payment</div>
-            <div className="text-xs opacity-75">Custom</div>
-          </button>
+        {/* Bulk Ticket Transaction */}
+        <div className="bg-white rounded-lg shadow-lg p-4 mb-4 animate-fade-in">
+          <h2 className="text-lg font-semibold mb-3 text-blue-700">🎟️ Add Tickets</h2>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={decrementTickets}
+              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-2xl font-bold w-12 h-12 rounded-lg shadow transition-colors touch-manipulation"
+            >
+              -
+            </button>
+            <div className="flex-1 text-center">
+              <div className="text-sm text-gray-600">
+                {ticketCount} {ticketCount === 1 ? 'ticket' : 'tickets'} × $20
+              </div>
+              <div className="text-2xl font-bold text-blue-600">
+                = ${ticketCount * 20}
+              </div>
+            </div>
+            <button
+              onClick={incrementTickets}
+              className="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-2xl font-bold w-12 h-12 rounded-lg shadow transition-colors touch-manipulation"
+            >
+              +
+            </button>
+            <button
+              onClick={addBulkTickets}
+              disabled={ticketCount === 0}
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xl font-bold w-12 h-12 rounded-lg shadow transition-colors touch-manipulation"
+            >
+              ✓
+            </button>
+          </div>
+        </div>
+
+        {/* Bulk Payment Transaction */}
+        <div className="bg-white rounded-lg shadow-lg p-4 mb-6 animate-fade-in">
+          <h2 className="text-lg font-semibold mb-3 text-green-700">💵 Add Payment</h2>
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+            <button
+              onClick={() => adjustPayment(-100)}
+              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition-colors touch-manipulation"
+            >
+              -$100
+            </button>
+            <button
+              onClick={() => adjustPayment(-20)}
+              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition-colors touch-manipulation"
+            >
+              -$20
+            </button>
+            <button
+              onClick={() => adjustPayment(20)}
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition-colors touch-manipulation"
+            >
+              +$20
+            </button>
+            <button
+              onClick={() => adjustPayment(100)}
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition-colors touch-manipulation"
+            >
+              +$100
+            </button>
+          </div>
+          <div className="flex items-center justify-center gap-3">
+            <div className="flex-1 text-center">
+              <div className="text-2xl font-bold text-green-600">
+                ${paymentAmount}
+              </div>
+            </div>
+            <button
+              onClick={addBulkPayment}
+              disabled={paymentAmount === 0}
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xl font-bold w-12 h-12 rounded-lg shadow transition-colors touch-manipulation"
+            >
+              ✓
+            </button>
+          </div>
         </div>
 
         {/* Recent Transactions */}
@@ -161,35 +228,42 @@ function App() {
           <div className="bg-white rounded-lg shadow p-4 animate-fade-in">
             <h2 className="font-semibold mb-3 text-gray-700">Recent Transactions</h2>
             <div className="space-y-2">
-              {recentTransactions.map((txn) => (
-                <div key={txn.id} className="flex justify-between items-center text-sm border-b pb-2">
-                  <div className="flex-1">
-                    <div className="font-medium">
-                      {txn.type === 'ticket' ? '🎟️ Ticket' : '💵 Payment'}
+              {recentTransactions.map((txn) => {
+                const ticketCount = txn.type === 'ticket' ? txn.amount / 20 : 0;
+                const displayText = txn.type === 'ticket'
+                  ? `${ticketCount} ${ticketCount === 1 ? 'ticket' : 'tickets'} × $20 = $${txn.amount.toFixed(2)}`
+                  : `-$${txn.amount.toFixed(2)}`;
+
+                return (
+                  <div key={txn.id} className="flex justify-between items-center text-sm border-b pb-2">
+                    <div className="flex-1">
+                      <div className="font-medium">
+                        {txn.type === 'ticket' ? '🎟️ Ticket' : '💵 Payment'}
+                      </div>
+                      <div className="text-xs text-gray-500">{txn.date}</div>
                     </div>
-                    <div className="text-xs text-gray-500">{txn.date}</div>
+                    <div className={`font-bold mr-2 ${txn.type === 'ticket' ? 'text-green-600' : 'text-red-600'}`}>
+                      {displayText}
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => startEditTransaction(txn)}
+                        className="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 active:bg-blue-300 text-blue-700 rounded transition-colors touch-manipulation"
+                        aria-label="Edit transaction"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => deleteTransaction(txn.id)}
+                        className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded transition-colors touch-manipulation"
+                        aria-label="Delete transaction"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                  <div className={`font-bold mr-2 ${txn.type === 'ticket' ? 'text-green-600' : 'text-red-600'}`}>
-                    {txn.type === 'ticket' ? '+' : '-'}${txn.amount.toFixed(2)}
-                  </div>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => startEditTransaction(txn)}
-                      className="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 active:bg-blue-300 text-blue-700 rounded transition-colors touch-manipulation"
-                      aria-label="Edit transaction"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => deleteTransaction(txn.id)}
-                      className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded transition-colors touch-manipulation"
-                      aria-label="Delete transaction"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -281,41 +355,6 @@ function App() {
           </div>
         )}
       </div>
-
-      {/* Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-backdrop">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl animate-slide-in">
-            <h2 className="text-xl font-bold mb-4">Record Payment</h2>
-            <input
-              type="number"
-              step="0.01"
-              value={paymentAmount}
-              onChange={(e) => setPaymentAmount(e.target.value)}
-              placeholder="Enter amount"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 text-lg"
-              autoFocus
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowPaymentModal(false);
-                  setPaymentAmount('');
-                }}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={addPayment}
-                className="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white rounded-lg font-semibold transition-colors"
-              >
-                Add Payment
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Edit Modal */}
       {showEditModal && editingTransaction && (
