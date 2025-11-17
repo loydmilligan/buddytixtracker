@@ -8,12 +8,14 @@ function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState(0);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [editAmount, setEditAmount] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [ticketCount, setTicketCount] = useState(1);
 
   useEffect(() => {
     const loaded = loadTransactions();
@@ -21,24 +23,30 @@ function App() {
     setBalance(calculateBalance(loaded));
   }, []);
 
-  const addTicket = () => {
+  const addTickets = () => {
+    if (ticketCount <= 0) {
+      alert('Please add at least one ticket');
+      return;
+    }
+
     const newTransaction: Transaction = {
       id: uuidv4(),
       date: format(new Date(), 'yyyy-MM-dd'),
       type: 'ticket',
-      amount: 20,
+      amount: ticketCount * 20,
       timestamp: Date.now(),
     };
-    
+
     const updated = [...transactions, newTransaction];
     setTransactions(updated);
     saveTransactions(updated);
     setBalance(calculateBalance(updated));
+    setShowTicketModal(false);
+    setTicketCount(1);
   };
 
   const addPayment = () => {
-    const amount = parseFloat(paymentAmount);
-    if (isNaN(amount) || amount <= 0) {
+    if (paymentAmount <= 0) {
       alert('Please enter a valid amount');
       return;
     }
@@ -47,7 +55,7 @@ function App() {
       id: uuidv4(),
       date: format(new Date(), 'yyyy-MM-dd'),
       type: 'payment',
-      amount: amount,
+      amount: paymentAmount,
       timestamp: Date.now(),
     };
 
@@ -56,7 +64,11 @@ function App() {
     saveTransactions(updated);
     setBalance(calculateBalance(updated));
     setShowPaymentModal(false);
-    setPaymentAmount('');
+    setPaymentAmount(0);
+  };
+
+  const adjustPayment = (delta: number) => {
+    setPaymentAmount(Math.max(0, paymentAmount + delta));
   };
 
   const deleteTransaction = (id: string) => {
@@ -138,19 +150,22 @@ function App() {
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <button
-            onClick={addTicket}
+            onClick={() => setShowTicketModal(true)}
             className="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-xl font-bold py-6 px-4 rounded-lg shadow-lg transition-colors touch-manipulation"
           >
-            <div className="text-3xl mb-1">+</div>
-            <div className="text-sm">Add Ticket</div>
-            <div className="text-xs opacity-75">$20</div>
+            <div className="text-3xl mb-1">🎟️</div>
+            <div className="text-sm">Add Tickets</div>
+            <div className="text-xs opacity-75">$20 each</div>
           </button>
-          
+
           <button
-            onClick={() => setShowPaymentModal(true)}
+            onClick={() => {
+              setPaymentAmount(20);
+              setShowPaymentModal(true);
+            }}
             className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-xl font-bold py-6 px-4 rounded-lg shadow-lg transition-colors touch-manipulation"
           >
-            <div className="text-3xl mb-1">$</div>
+            <div className="text-3xl mb-1">💵</div>
             <div className="text-sm">Add Payment</div>
             <div className="text-xs opacity-75">Custom</div>
           </button>
@@ -161,35 +176,41 @@ function App() {
           <div className="bg-white rounded-lg shadow p-4 animate-fade-in">
             <h2 className="font-semibold mb-3 text-gray-700">Recent Transactions</h2>
             <div className="space-y-2">
-              {recentTransactions.map((txn) => (
-                <div key={txn.id} className="flex justify-between items-center text-sm border-b pb-2">
-                  <div className="flex-1">
-                    <div className="font-medium">
-                      {txn.type === 'ticket' ? '🎟️ Ticket' : '💵 Payment'}
+              {recentTransactions.map((txn) => {
+                const ticketCount = txn.type === 'ticket' ? txn.amount / 20 : 0;
+                return (
+                  <div key={txn.id} className="flex justify-between items-center text-sm border-b pb-2">
+                    <div className="flex-1">
+                      <div className="font-medium">
+                        {txn.type === 'ticket' ? '🎟️ Tickets' : '💵 Payment'}
+                      </div>
+                      <div className="text-xs text-gray-500">{txn.date}</div>
                     </div>
-                    <div className="text-xs text-gray-500">{txn.date}</div>
+                    <div className={`font-bold mr-2 ${txn.type === 'ticket' ? 'text-green-600' : 'text-red-600'}`}>
+                      {txn.type === 'ticket'
+                        ? `${ticketCount} × $20 = +$${txn.amount.toFixed(2)}`
+                        : `-$${txn.amount.toFixed(2)}`
+                      }
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => startEditTransaction(txn)}
+                        className="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 active:bg-blue-300 text-blue-700 rounded transition-colors touch-manipulation"
+                        aria-label="Edit transaction"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => deleteTransaction(txn.id)}
+                        className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded transition-colors touch-manipulation"
+                        aria-label="Delete transaction"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                  <div className={`font-bold mr-2 ${txn.type === 'ticket' ? 'text-green-600' : 'text-red-600'}`}>
-                    {txn.type === 'ticket' ? '+' : '-'}${txn.amount.toFixed(2)}
-                  </div>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => startEditTransaction(txn)}
-                      className="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 active:bg-blue-300 text-blue-700 rounded transition-colors touch-manipulation"
-                      aria-label="Edit transaction"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => deleteTransaction(txn.id)}
-                      className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded transition-colors touch-manipulation"
-                      aria-label="Delete transaction"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -282,25 +303,120 @@ function App() {
         )}
       </div>
 
+      {/* Ticket Modal */}
+      {showTicketModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-backdrop">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl animate-slide-in">
+            <h2 className="text-xl font-bold mb-4">Add Tickets</h2>
+
+            {/* Ticket Counter */}
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <button
+                onClick={() => setTicketCount(Math.max(1, ticketCount - 1))}
+                className="w-12 h-12 bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded-lg font-bold text-2xl transition-colors touch-manipulation"
+              >
+                −
+              </button>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-gray-800">{ticketCount}</div>
+                <div className="text-xs text-gray-500">tickets</div>
+              </div>
+              <button
+                onClick={() => setTicketCount(ticketCount + 1)}
+                className="w-12 h-12 bg-green-100 hover:bg-green-200 active:bg-green-300 text-green-700 rounded-lg font-bold text-2xl transition-colors touch-manipulation"
+              >
+                +
+              </button>
+            </div>
+
+            {/* Total Display */}
+            <div className="text-center mb-6 p-4 bg-blue-50 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">Total</div>
+              <div className="text-2xl font-bold text-blue-700">
+                {ticketCount} × $20 = ${(ticketCount * 20).toFixed(2)}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowTicketModal(false);
+                  setTicketCount(1);
+                }}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addTickets}
+                className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                ✓ Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Payment Modal */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-backdrop">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl animate-slide-in">
             <h2 className="text-xl font-bold mb-4">Record Payment</h2>
+
+            {/* Current Amount Display */}
+            <div className="text-center mb-4 p-4 bg-green-50 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">Payment Amount</div>
+              <div className="text-3xl font-bold text-green-700">
+                ${paymentAmount.toFixed(2)}
+              </div>
+            </div>
+
+            {/* Quick Adjustment Buttons */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <button
+                onClick={() => adjustPayment(20)}
+                className="px-4 py-3 bg-green-100 hover:bg-green-200 active:bg-green-300 text-green-700 rounded-lg font-semibold transition-colors touch-manipulation"
+              >
+                +$20
+              </button>
+              <button
+                onClick={() => adjustPayment(100)}
+                className="px-4 py-3 bg-green-100 hover:bg-green-200 active:bg-green-300 text-green-700 rounded-lg font-semibold transition-colors touch-manipulation"
+              >
+                +$100
+              </button>
+              <button
+                onClick={() => adjustPayment(-20)}
+                className="px-4 py-3 bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded-lg font-semibold transition-colors touch-manipulation"
+              >
+                -$20
+              </button>
+              <button
+                onClick={() => adjustPayment(-100)}
+                className="px-4 py-3 bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700 rounded-lg font-semibold transition-colors touch-manipulation"
+              >
+                -$100
+              </button>
+            </div>
+
+            {/* Manual Input */}
             <input
               type="number"
               step="0.01"
               value={paymentAmount}
-              onChange={(e) => setPaymentAmount(e.target.value)}
+              onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
               placeholder="Enter amount"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 text-lg"
-              autoFocus
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 text-lg text-center"
             />
+
+            {/* Action Buttons */}
             <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowPaymentModal(false);
-                  setPaymentAmount('');
+                  setPaymentAmount(0);
                 }}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors"
               >
@@ -310,7 +426,7 @@ function App() {
                 onClick={addPayment}
                 className="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white rounded-lg font-semibold transition-colors"
               >
-                Add Payment
+                ✓ Add
               </button>
             </div>
           </div>
