@@ -188,28 +188,28 @@ function App() {
         {/* Bulk Payment Transaction */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 animate-fade-in">
           <h2 className="text-2xl font-bold mb-4 text-green-700">💵 Add Payment</h2>
-          <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="grid grid-cols-2 gap-4 mb-5">
             <button
               onClick={() => adjustPayment(-100)}
-              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-xl font-bold py-4 px-6 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
+              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-2xl font-bold py-6 px-8 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation min-h-[70px]"
             >
               -$100
             </button>
             <button
               onClick={() => adjustPayment(-20)}
-              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-xl font-bold py-4 px-6 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
+              className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-2xl font-bold py-6 px-8 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation min-h-[70px]"
             >
               -$20
             </button>
             <button
               onClick={() => adjustPayment(20)}
-              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-xl font-bold py-4 px-6 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-2xl font-bold py-6 px-8 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation min-h-[70px]"
             >
               +$20
             </button>
             <button
               onClick={() => adjustPayment(100)}
-              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-xl font-bold py-4 px-6 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation"
+              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-2xl font-bold py-6 px-8 rounded-xl shadow-lg transition-all active:scale-95 touch-manipulation min-h-[70px]"
             >
               +$100
             </button>
@@ -340,40 +340,40 @@ function App() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`aspect-square p-1 border-2 rounded-xl relative min-h-[80px] ${
+                    className={`aspect-square p-2 border-2 rounded-xl relative min-h-[90px] ${
                       isToday ? 'border-blue-500 bg-blue-50 shadow-lg' : 'border-gray-300'
                     } ${hasTransactions ? 'bg-green-50' : 'bg-white'}`}
                   >
-                    {/* Day number centered */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="font-bold text-base text-gray-700">{format(day, 'd')}</div>
+                    {/* Day number - top center */}
+                    <div className="absolute top-0 left-0 right-0 flex justify-center pt-1">
+                      <div className="font-bold text-sm text-gray-700">{format(day, 'd')}</div>
                     </div>
 
                     {hasTransactions && (
                       <>
-                        {/* Debits - top left */}
+                        {/* Debits - middle left */}
                         {debits > 0 && (
-                          <div className="absolute top-1 left-1 text-[9px] leading-none font-bold text-red-600">
+                          <div className="absolute top-1/2 -translate-y-1/2 left-1 text-[10px] leading-none font-bold text-red-600">
                             -{debits}
                           </div>
                         )}
 
-                        {/* Credits - top right */}
+                        {/* Credits - middle right */}
                         {credits > 0 && (
-                          <div className="absolute top-1 right-1 text-[9px] leading-none font-bold text-green-600">
+                          <div className="absolute top-1/2 -translate-y-1/2 right-1 text-[10px] leading-none font-bold text-green-600">
                             +{credits}
                           </div>
                         )}
 
                         {/* Day sum - bottom left */}
-                        <div className={`absolute bottom-1 left-1 text-[9px] leading-none font-bold ${
+                        <div className={`absolute bottom-1 left-1 text-[10px] leading-none font-bold ${
                           daySum >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}>
                           {daySum >= 0 ? '+' : ''}{daySum}
                         </div>
 
                         {/* Running balance - bottom right */}
-                        <div className={`absolute bottom-1 right-1 text-[9px] leading-none font-bold ${
+                        <div className={`absolute bottom-1 right-1 text-[10px] leading-none font-bold ${
                           runningBalance >= 0 ? 'text-green-700' : 'text-red-700'
                         }`}>
                           {runningBalance.toFixed(0)}
