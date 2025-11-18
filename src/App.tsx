@@ -340,40 +340,40 @@ function App() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`aspect-square p-2 border-2 rounded-xl relative ${
+                    className={`aspect-square p-1 border-2 rounded-xl relative min-h-[80px] ${
                       isToday ? 'border-blue-500 bg-blue-50 shadow-lg' : 'border-gray-300'
                     } ${hasTransactions ? 'bg-green-50' : 'bg-white'}`}
                   >
                     {/* Day number centered */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="font-bold text-lg text-gray-700">{format(day, 'd')}</div>
+                      <div className="font-bold text-base text-gray-700">{format(day, 'd')}</div>
                     </div>
 
                     {hasTransactions && (
                       <>
                         {/* Debits - top left */}
                         {debits > 0 && (
-                          <div className="absolute top-0.5 left-0.5 text-[10px] font-bold text-red-600">
+                          <div className="absolute top-1 left-1 text-[9px] leading-none font-bold text-red-600">
                             -{debits}
                           </div>
                         )}
 
                         {/* Credits - top right */}
                         {credits > 0 && (
-                          <div className="absolute top-0.5 right-0.5 text-[10px] font-bold text-green-600">
+                          <div className="absolute top-1 right-1 text-[9px] leading-none font-bold text-green-600">
                             +{credits}
                           </div>
                         )}
 
                         {/* Day sum - bottom left */}
-                        <div className={`absolute bottom-0.5 left-0.5 text-[10px] font-bold ${
+                        <div className={`absolute bottom-1 left-1 text-[9px] leading-none font-bold ${
                           daySum >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}>
                           {daySum >= 0 ? '+' : ''}{daySum}
                         </div>
 
                         {/* Running balance - bottom right */}
-                        <div className={`absolute bottom-0.5 right-0.5 text-[10px] font-bold ${
+                        <div className={`absolute bottom-1 right-1 text-[9px] leading-none font-bold ${
                           runningBalance >= 0 ? 'text-green-700' : 'text-red-700'
                         }`}>
                           {runningBalance.toFixed(0)}
